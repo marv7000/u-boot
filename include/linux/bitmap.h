@@ -167,7 +167,7 @@ bitmap_find_next_zero_area(unsigned long *map,
 {
 	unsigned long index, end, i;
 again:
-	index = find_next_zero_bit(map, size, start);
+	index = find_next_bit(map, size, start);
 
 	/*
 	 * Align allocation

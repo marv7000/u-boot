@@ -6,6 +6,17 @@
 #include <phy_interface.h>
 #include <linux/bitops.h>
 
+#define error(fmt, args...) printf("ERROR: " pr_fmt(fmt) "\nat %s:%d/%s()\n",	\
+				    ##args, __FILE__, __LINE__, __func__)
+
+
+/*
+#if defined(CONFIG_ARCH_BITMAIN) || defined(CONFIG_ARCH_SOPHGO)
+#include <asm/arch/debug.h>
+#endif
+*/
+#define RTL_PHY_ID 0x001C
+
 /* Core registers */
 
 #define EQOS_MAC_REGS_BASE 0x000
@@ -84,6 +95,9 @@ struct eqos_mac_regs {
 #define EQOS_MAC_MDIO_ADDRESS_CR_SHIFT			8
 #define EQOS_MAC_MDIO_ADDRESS_CR_100_150		1
 #define EQOS_MAC_MDIO_ADDRESS_CR_20_35			2
+#if defined(CONFIG_ARCH_BITMAIN) || defined(CONFIG_ARCH_SOPHGO)
+#define EQOS_MAC_MDIO_ADDRESS_CR_150_250                4
+#endif
 #define EQOS_MAC_MDIO_ADDRESS_CR_250_300		5
 #define EQOS_MAC_MDIO_ADDRESS_SKAP			BIT(4)
 #define EQOS_MAC_MDIO_ADDRESS_GOC_SHIFT			2
@@ -157,6 +171,9 @@ struct eqos_dma_regs {
 
 #define EQOS_DMA_SYSBUS_MODE_RD_OSR_LMT_SHIFT		16
 #define EQOS_DMA_SYSBUS_MODE_RD_OSR_LMT_MASK		0xf
+#if defined(CONFIG_ARCH_BITMAIN) || defined(CONFIG_ARCH_SOPHGO)
+#define EQOS_DMA_SYSBUS_MODE_ONEKBBE                    BIT(13)
+#endif
 #define EQOS_DMA_SYSBUS_MODE_EAME			BIT(11)
 #define EQOS_DMA_SYSBUS_MODE_BLEN16			BIT(3)
 #define EQOS_DMA_SYSBUS_MODE_BLEN8			BIT(2)
@@ -277,6 +294,9 @@ struct eqos_priv {
 	bool started;
 	bool reg_access_ok;
 	bool clk_ck_enabled;
+#if defined(CONFIG_ARCH_BITMAIN) || defined(CONFIG_ARCH_SOPHGO)
+	bool has_phy_reset_gpio;
+#endif
 	unsigned int tx_fifo_sz, rx_fifo_sz;
 	u32 reset_delays[3];
 };

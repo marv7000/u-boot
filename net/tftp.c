@@ -5,7 +5,6 @@
  * Copyright 2011 Comelit Group SpA,
  *                Luca Ceresoli <luca.ceresoli@comelit.it>
  */
-#include <common.h>
 #include <command.h>
 #include <display_options.h>
 #include <efi_loader.h>
@@ -694,7 +693,6 @@ static void tftp_handler(uchar *pkt, unsigned dest, struct in_addr sip,
 		break;
 	}
 }
-
 
 static void tftp_timeout_handler(void)
 {

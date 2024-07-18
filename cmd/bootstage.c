@@ -3,9 +3,9 @@
  * Copyright (c) 2012, Google Inc. All rights reserved.
  */
 
-#include <common.h>
 #include <bootstage.h>
 #include <command.h>
+#include <vsprintf.h>
 
 static int do_bootstage_report(struct cmd_tbl *cmdtp, int flag, int argc,
 			       char *const argv[])
@@ -85,7 +85,6 @@ static int do_boostage(struct cmd_tbl *cmdtp, int flag, int argc,
 	else
 		return CMD_RET_USAGE;
 }
-
 
 U_BOOT_CMD(bootstage, 4, 1, do_boostage,
 	"Boot stage command",

@@ -3,7 +3,6 @@
  * Copyright (c) 2011, Google Inc. All rights reserved.
  */
 
-
 /*
  * This module records the progress of boot and arbitrary commands, and
  * permits accurate timestamping of each.
@@ -11,7 +10,6 @@
 
 #define LOG_CATEGORY	LOGC_BOOT
 
-#include <common.h>
 #include <bootstage.h>
 #include <hang.h>
 #include <log.h>

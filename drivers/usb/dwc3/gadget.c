@@ -13,7 +13,6 @@
  * commit 8e74475b0e : usb: dwc3: gadget: use udc-core's reset notifier
  */
 
-#include <common.h>
 #include <cpu_func.h>
 #include <log.h>
 #include <malloc.h>
@@ -249,7 +248,7 @@ void dwc3_gadget_giveback(struct dwc3_ep *dep, struct dwc3_request *req,
 
 	list_del(&req->list);
 	req->trb = NULL;
-	if (req->request.length)
+	if (req->request.dma && req->request.length)
 		dwc3_flush_cache((uintptr_t)req->request.dma, req->request.length);
 
 	if (req->request.status == -EINPROGRESS)
@@ -257,7 +256,7 @@ void dwc3_gadget_giveback(struct dwc3_ep *dep, struct dwc3_request *req,
 
 	if (dwc->ep0_bounced && dep->number == 0)
 		dwc->ep0_bounced = false;
-	else
+	else if (req->request.dma)
 		usb_gadget_unmap_request(&dwc->gadget, &req->request,
 				req->direction);
 
@@ -1607,6 +1606,38 @@ static int dwc3_gadget_stop(struct usb_gadget *g)
 	return 0;
 }
 
+static struct usb_ep *dwc3_find_ep(struct usb_gadget *gadget, const char *name)
+{
+	struct usb_ep *ep;
+
+	list_for_each_entry(ep, &gadget->ep_list, ep_list)
+		if (!strcmp(ep->name, name))
+			return ep;
+
+	return NULL;
+}
+
+static struct
+usb_ep *dwc3_gadget_match_ep(struct usb_gadget *gadget,
+			     struct usb_endpoint_descriptor *desc,
+			     struct usb_ss_ep_comp_descriptor *comp_desc)
+{
+	/*
+	 * First try standard, common configuration: ep1in-bulk,
+	 * ep2out-bulk, ep3in-int to match other udc drivers to avoid
+	 * confusion in already deployed software (endpoint numbers
+	 * hardcoded in userspace software/drivers)
+	 */
+	if (usb_endpoint_is_bulk_in(desc))
+		return dwc3_find_ep(gadget, "ep1in");
+	if (usb_endpoint_is_bulk_out(desc))
+		return dwc3_find_ep(gadget, "ep2out");
+	if (usb_endpoint_is_int_in(desc))
+		return dwc3_find_ep(gadget, "ep3in");
+
+	return NULL;
+}
+
 static const struct usb_gadget_ops dwc3_gadget_ops = {
 	.get_frame		= dwc3_gadget_get_frame,
 	.wakeup			= dwc3_gadget_wakeup,
@@ -1614,6 +1645,7 @@ static const struct usb_gadget_ops dwc3_gadget_ops = {
 	.pullup			= dwc3_gadget_pullup,
 	.udc_start		= dwc3_gadget_start,
 	.udc_stop		= dwc3_gadget_stop,
+	.match_ep		= dwc3_gadget_match_ep,
 };
 
 /* -------------------------------------------------------------------------- */
